@@ -1,271 +1,384 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Notion Progress Tracker</title>
-<style>
-body {
-  margin:0;
-  padding:0;
-  font-family:'Work Sans',sans-serif;
-  font-weight:bold;
-  box-sizing:border-box;
-  transition: background-color 0.3s,color 0.3s;
-}
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Notion Progress Tracker</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: "Work Sans", sans-serif;
+        font-weight: bold;
+        box-sizing: border-box;
+        transition: background-color 0.3s, color 0.3s;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
 
-/* Header with gear */
-.header{
-  display:flex;
-  justify-content:flex-end;
-  align-items:center;
-  padding:2px 5px;
-}
-.gear{
-  font-size:22px;
-  cursor:pointer;
-  user-select:none;
-}
+      /* Widget container */
+      .widget-container {
+        min-width: 290px;
+        min-height: 130px;
+        padding: 10px 15px;
+        background-color: #f5f5f5;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+      }
 
-/* Compact centered settings popup */
-.sidebar{
-  position:fixed;
-  top:50%;
-  left:50%;
-  transform:translate(-50%,-50%) scale(0);
-  width:260px;
-  max-width:90%;
-  background:#f5f5f5;
-  border-radius:12px;
-  padding:15px;
-  box-shadow:0 5px 15px rgba(0,0,0,0.3);
-  transition:transform 0.3s ease,opacity 0.3s ease;
-  z-index:1000;
-  opacity:0;
-}
-.sidebar.open{
-  transform:translate(-50%,-50%) scale(1);
-  opacity:1;
-}
-.sidebar h2{
-  margin-top:0;
-  font-size:1rem;
-}
-.sidebar .closeBtn{
-  font-size:24px;
-  font-weight:bold;
-  cursor:pointer;
-  float:right;
-}
-.sidebar label,.sidebar select,.sidebar input{
-  display:block;
-  margin:8px 0;
-  width:100%;
-  font-weight:bold;
-  font-size:0.9rem;
-}
+      /* Header with gear */
+      .header {
+        width: 100%;
+        display: flex;
+        justify-content: flex-end;
+      }
+      .gear {
+        font-size: 22px;
+        cursor: pointer;
+        user-select: none;
+        transition: color 0.3s ease;
+      }
 
-/* Widget Row Compact */
-.widget-row{
-  display:flex;
-  align-items:center;
-  gap:8px;              /* spacing for readability */
-  padding:4px 6px;      
-  flex-wrap:wrap;
-}
-#widget-title{
-  font-size:0.95rem;    /* bigger, readable */
-  font-weight:bold;
-  min-width:50px;
-  white-space:nowrap;
-  letter-spacing:0.5px; /* spacing like Notion */
-}
-.progress-container{
-  flex:1;
-  height:20px;          /* thicker bar */
-  border-radius:10px;   /* smooth round corners */
-  border:1px solid;
-  position:relative;
-  background-color:var(--bar-bg,#e0e0e0);
-  overflow:hidden;
-}
-.progress-bar{
-  height:100%;
-  width:0%;
-  border-radius:10px;
-  transition:width 0.5s,background 0.5s;
-}
-.percent-text{
-  min-width:35px;
-  font-size:0.9rem;     
-  font-weight:bold;
-  text-align:center;
-  letter-spacing:0.5px;
-}
-.current-goal{
-  font-size:0.9rem;     
-  font-weight:bold;
-  min-width:65px;
-  text-align:right;
-  letter-spacing:0.5px;
-}
+      /* Compact centered settings popup */
+      .sidebar {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0);
+        width: 260px;
+        max-width: 90%;
+        background: #f5f5f5;
+        border-radius: 12px;
+        padding: 8px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+        transition: transform 0.3s ease, opacity 0.3s ease;
+        z-index: 1000;
+        opacity: 0;
+        font-size: 0.85rem;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .sidebar.open {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+      }
+      .sidebar .closeBtn {
+        font-size: 20px;
+        font-weight: bold;
+        cursor: pointer;
+        align-self: flex-end;
+      }
 
-@media(max-width:500px){
-  .widget-row{flex-direction:column;align-items:stretch;}
-  .percent-text,.current-goal{text-align:left;}
-  .sidebar{width:90%;padding:12px;}
-}
-</style>
-</head>
-<body>
+      /* Horizontal rows */
+      .setting-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 6px;
+      }
 
-<div class="header">
-  <span class="gear" onclick="toggleSidebar()">⚙</span>
-</div>
+      /* Widget content */
+      #widget-title {
+        font-size: 1.2rem;
+        font-weight: bold;
+        text-align: center;
+        margin-bottom: 6px;
+        letter-spacing: 0.5px;
+      }
+      .progress-container {
+        width: 100%;
+        height: 20px;
+        border-radius: 10px;
+        border: 1px solid;
+        position: relative;
+        background-color: var(--bar-bg, #ddd);
+        overflow: hidden;
+      }
+      .progress-bar {
+        height: 100%;
+        width: 0%;
+        border-radius: 10px;
+        transition: width 0.5s, background 0.5s;
+      }
+      .bottom-row {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.9rem;
+        font-weight: bold;
+        margin-top: 4px;
+      }
+      .bottom-row span {
+        letter-spacing: 0.5px;
+      }
+      @media (max-width: 500px) {
+        .widget-container {
+          width: 90%;
+          min-width: 200px;
+        }
+        .sidebar {
+          width: 90%;
+          padding: 6px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="widget-container">
+      <div class="header">
+        <span id="gear-icon" class="gear" onclick="toggleSidebar()">⚙</span>
+      </div>
 
-<div class="sidebar" id="sidebar">
-  <span class="closeBtn" onclick="toggleSidebar()">×</span>
-  <h2>Settings</h2>
+      <div id="widget-title"></div>
+      <div class="progress-container">
+        <div class="progress-bar" id="progress-bar"></div>
+      </div>
+      <div class="bottom-row">
+        <span id="percent-text">0%</span>
+        <span id="current-goal">0/0</span>
+      </div>
+    </div>
 
-  <label for="themeSelect">Theme:</label>
-  <select id="themeSelect" onchange="changeTheme()">
-    <option value="auto">Auto (Notion)</option>
-    <option value="light">Light</option>
-    <option value="dark">Dark</option>
-  </select>
+    <div class="sidebar" id="sidebar">
+      <span class="closeBtn" onclick="toggleSidebar()">×</span>
 
-  <label for="fontSelect">Font Style:</label>
-  <select id="fontSelect" onchange="changeFont()">
-    <option value="'Work Sans', sans-serif">Work Sans</option>
-    <option value="serif">Serif</option>
-    <option value="monospace">Mono</option>
-  </select>
+      <!-- Theme row -->
+      <div class="setting-row">
+        <label>Theme:</label>
+        <label
+          ><input
+            type="radio"
+            name="theme"
+            value="auto"
+            onchange="changeTheme()"
+          />Auto</label
+        >
+        <label
+          ><input
+            type="radio"
+            name="theme"
+            value="dark"
+            onchange="changeTheme()"
+          />Dark</label
+        >
+        <label
+          ><input
+            type="radio"
+            name="theme"
+            value="light"
+            onchange="changeTheme()"
+          />Light</label
+        >
+      </div>
 
-  <label for="barType">Progress Type:</label>
-  <select id="barType" onchange="changeBarType()">
-    <option value="solid">Solid</option>
-    <option value="gradient">Gradient</option>
-  </select>
+      <!-- Font row -->
+      <div class="setting-row">
+        <label>Font:</label>
+        <select id="fontSelect" onchange="changeFont()">
+          <option value="'Work Sans', sans-serif">Work Sans</option>
+          <option value="serif">Serif</option>
+          <option value="monospace">Mono</option>
+        </select>
+      </div>
 
-  <label for="barColor1">Color 1:</label>
-  <input type="color" id="barColor1" onchange="changeBarColors()">
-  <label for="barColor2" id="barColor2Label">Color 2 (gradient):</label>
-  <input type="color" id="barColor2" onchange="changeBarColors()">
-</div>
+      <!-- Progress type row -->
+      <div class="setting-row">
+        <label>Type:</label>
+        <label
+          ><input
+            type="radio"
+            name="barType"
+            value="solid"
+            onchange="changeBarType()"
+          />Solid</label
+        >
+        <label
+          ><input
+            type="radio"
+            name="barType"
+            value="gradient"
+            onchange="changeBarType()"
+          />Gradient</label
+        >
+      </div>
 
-<div class="widget-row">
-  <div id="widget-title"></div>
-  <div class="progress-container">
-    <div class="progress-bar" id="progress-bar"></div>
-  </div>
-  <div class="percent-text" id="percent-text">0%</div>
-  <div class="current-goal" id="current-goal">0/0</div>
-</div>
+      <!-- Color row -->
+      <div class="setting-row">
+        <label>Color 1:</label>
+        <input type="color" id="barColor1" onchange="changeBarColors()" />
+        <input
+          type="color"
+          id="barColor2"
+          onchange="changeBarColors()"
+          style="display: none"
+        />
+      </div>
+    </div>
 
-<script>
-const API_URL="https://sheetdb.io/api/v1/r0g4ot5dg5gk0";
-let goal=0,current=0,title="";
-let rowId=1;
+    <script>
+      const API_URL = "https://sheetdb.io/api/v1/r0g4ot5dg5gk0";
+      let goal = 0,
+        current = 0,
+        title = "";
 
-/* Sidebar toggle */
-function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');}
+      /* Sidebar toggle */
+      function toggleSidebar() {
+        document.getElementById("sidebar").classList.toggle("open");
+      }
 
-/* Load saved settings */
-function loadStyles(){
-  const font=localStorage.getItem('trackerFont')||"'Work Sans',sans-serif";
-  const barType=localStorage.getItem('trackerBarType')||'solid';
-  const barColor1=localStorage.getItem('trackerBarColor1')||'#00aa00';
-  const barColor2=localStorage.getItem('trackerBarColor2')||'#55ff55';
-  const theme=localStorage.getItem('trackerTheme')||'auto';
+      /* Load saved settings */
+      function loadStyles() {
+        const font =
+          localStorage.getItem("trackerFont") || "'Work Sans',sans-serif";
+        const barType = localStorage.getItem("trackerBarType") || "solid";
+        const barColor1 = localStorage.getItem("trackerBarColor1") || "#00aa00";
+        const barColor2 = localStorage.getItem("trackerBarColor2") || "#55ff55";
+        const theme = localStorage.getItem("trackerTheme") || "auto";
 
-  document.body.style.fontFamily=font;
-  document.getElementById('fontSelect').value=font;
-  document.getElementById('barType').value=barType;
-  document.getElementById('barColor1').value=barColor1;
-  document.getElementById('barColor2').value=barColor2;
-  document.getElementById('themeSelect').value=theme;
+        document.body.style.fontFamily = font;
+        document.getElementById("fontSelect").value = font;
 
-  toggleBar2Input();
-  updateProgressBar();
-}
+        // Set radio buttons
+        document.querySelectorAll('input[name="theme"]').forEach((r) => {
+          r.checked = r.value === theme;
+        });
+        document.querySelectorAll('input[name="barType"]').forEach((r) => {
+          r.checked = r.value === barType;
+        });
 
-/* Font handling */
-function changeFont(){
-  const f=document.getElementById('fontSelect').value;
-  document.body.style.fontFamily=f;
-  localStorage.setItem('trackerFont',f);
-}
+        document.getElementById("barColor1").value = barColor1;
+        document.getElementById("barColor2").value = barColor2;
 
-/* Theme handling */
-function changeTheme(){
-  const theme=document.getElementById('themeSelect').value;
-  localStorage.setItem('trackerTheme',theme);
-  updateProgressBar();
-}
+        toggleBar2Input();
+        updateProgressBar();
+      }
 
-/* Bar color handling */
-function changeBarType(){localStorage.setItem('trackerBarType',document.getElementById('barType').value); toggleBar2Input(); updateProgressBar();}
-function changeBarColors(){localStorage.setItem('trackerBarColor1',document.getElementById('barColor1').value); localStorage.setItem('trackerBarColor2',document.getElementById('barColor2').value); updateProgressBar();}
-function toggleBar2Input(){
-  const type=document.getElementById('barType').value;
-  document.getElementById('barColor2').style.display=(type==='gradient')?'block':'none';
-  document.getElementById('barColor2Label').style.display=(type==='gradient')?'block':'none';
-}
+      /* Font handling */
+      function changeFont() {
+        const f = document.getElementById("fontSelect").value;
+        document.body.style.fontFamily = f;
+        localStorage.setItem("trackerFont", f);
+      }
 
-/* Load data from SheetDB */
-async function loadData(){
-  try{
-    const res=await fetch(API_URL);
-    const data=await res.json();
-    const row=data[0];
-    title=row.Title||"";
-    goal=parseFloat(row.Goal)||0;
-    current=parseFloat(row.Current)||0;
-    document.getElementById('widget-title').textContent=title;
-    updateProgressBar();
-  }catch(err){console.error(err);}
-}
+      /* Theme handling */
+      function changeTheme() {
+        const theme = document.querySelector(
+          'input[name="theme"]:checked'
+        ).value;
+        localStorage.setItem("trackerTheme", theme);
+        updateProgressBar();
+      }
 
-/* Update progress bar and text */
-function updateProgressBar(){
-  const progressPercent=goal>0?Math.min((current/goal)*100,100):0;
-  const bar=document.getElementById('progress-bar');
-  const percentText=document.getElementById('percent-text');
-  const currentGoalText=document.getElementById('current-goal');
-  percentText.textContent=Math.floor(progressPercent)+'%';
-  currentGoalText.textContent=`${current}/${goal}`;
+      /* Update gear icon based on dark/light mode */
+      function updateGearIcon() {
+        const gear = document.getElementById("gear-icon");
+        const savedTheme = localStorage.getItem("trackerTheme") || "auto";
+        let darkMode =
+          window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches;
+        if (savedTheme === "light") darkMode = false;
+        if (savedTheme === "dark") darkMode = true;
+        gear.style.color = darkMode ? "#FFFFFF" : "#000000";
+      }
 
-  const savedTheme = localStorage.getItem('trackerTheme')||'auto';
-  let darkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-  if(savedTheme==='light') darkMode=false;
-  if(savedTheme==='dark') darkMode=true;
+      /* Bar color handling */
+      function changeBarType() {
+        localStorage.setItem(
+          "trackerBarType",
+          document.querySelector('input[name="barType"]:checked').value
+        );
+        toggleBar2Input();
+        updateProgressBar();
+      }
+      function changeBarColors() {
+        localStorage.setItem(
+          "trackerBarColor1",
+          document.getElementById("barColor1").value
+        );
+        localStorage.setItem(
+          "trackerBarColor2",
+          document.getElementById("barColor2").value
+        );
+        updateProgressBar();
+      }
+      function toggleBar2Input() {
+        const type = document.querySelector(
+          'input[name="barType"]:checked'
+        ).value;
+        document.getElementById("barColor2").style.display =
+          type === "gradient" ? "inline-block" : "none";
+      }
 
-  const textColor = darkMode ? '#FFFFFF' : '#000000';
-  const bgColor = darkMode ? '#2b2b2b' : '#f5f5f5';
-  const barBg = darkMode ? '#444' : '#ddd';
-  const barBorder = darkMode ? '#666' : '#bbb';
+      /* Load data from SheetDB */
+      async function loadData() {
+        try {
+          const res = await fetch(API_URL);
+          const data = await res.json();
+          const row = data[0];
+          title = row.Title || "";
+          goal = parseFloat(row.Goal) || 0;
+          current = parseFloat(row.Current) || 0;
+          document.getElementById("widget-title").textContent = title;
+          updateProgressBar();
+        } catch (err) {
+          console.error(err);
+        }
+      }
 
-  document.body.style.backgroundColor = bgColor;
-  percentText.style.color = textColor;
-  currentGoalText.style.color = textColor;
-  document.getElementById('widget-title').style.color = textColor;
+      /* Update progress bar and text */
+      function updateProgressBar() {
+        const progressPercent =
+          goal > 0 ? Math.min((current / goal) * 100, 100) : 0;
+        const bar = document.getElementById("progress-bar");
+        const percentText = document.getElementById("percent-text");
+        const currentGoalText = document.getElementById("current-goal");
+        percentText.textContent = Math.floor(progressPercent) + "%";
+        currentGoalText.textContent = `${current}/${goal}`;
 
-  const type=localStorage.getItem('trackerBarType')||'solid';
-  const c1=localStorage.getItem('trackerBarColor1')||'#00aa00';
-  const c2=localStorage.getItem('trackerBarColor2')||'#55ff55';
+        const savedTheme = localStorage.getItem("trackerTheme") || "auto";
+        let darkMode =
+          window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches;
+        if (savedTheme === "light") darkMode = false;
+        if (savedTheme === "dark") darkMode = true;
 
-  bar.parentElement.style.backgroundColor = barBg;
-  bar.parentElement.style.borderColor = barBorder;
+        const textColor = darkMode ? "#FFFFFF" : "#000000";
+        const bgColor = darkMode ? "#2b2b2b" : "#f5f5f5";
+        const barBg = darkMode ? "#444" : "#ddd";
+        const barBorder = darkMode ? "#666" : "#bbb";
 
-  bar.style.background = (type==='solid')?c1:`linear-gradient(to right, ${c1}, ${c2})`;
-  bar.style.width = progressPercent+'%';
-}
+        document.querySelector(".widget-container").style.backgroundColor =
+          bgColor;
+        percentText.style.color = textColor;
+        currentGoalText.style.color = textColor;
+        document.getElementById("widget-title").style.color = textColor;
 
-/* Initial load */
-loadStyles();
-loadData();
-setInterval(loadData,300000); // Refresh every 5 minutes
-</script>
+        const type = localStorage.getItem("trackerBarType") || "solid";
+        const c1 = localStorage.getItem("trackerBarColor1") || "#00aa00";
+        const c2 = localStorage.getItem("trackerBarColor2") || "#55ff55";
 
-</body>
+        bar.parentElement.style.backgroundColor = barBg;
+        bar.parentElement.style.borderColor = barBorder;
+
+        bar.style.background =
+          type === "solid" ? c1 : `linear-gradient(to right, ${c1}, ${c2})`;
+        bar.style.width = progressPercent + "%";
+
+        updateGearIcon();
+      }
+
+      /* Initial load */
+      loadStyles();
+      loadData();
+      setInterval(loadData, 300000); // Refresh every 5 minutes
+    </script>
+  </body>
 </html>
