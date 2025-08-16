@@ -1,362 +1,264 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Compact Notion Progress Widget</title>
-    <style>
-      body {
-        margin: 0;
-        padding: 0;
-        font-family: "Work Sans", sans-serif;
-        font-weight: bold;
-        box-sizing: border-box;
-        transition: background-color 0.3s, color 0.3s;
-      }
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notion Progress Tracker</title>
+<style>
+body {
+  margin:0;
+  padding:0;
+  font-family:'Work Sans',sans-serif;
+  font-weight:bold;
+  box-sizing:border-box;
+  transition: background-color 0.3s,color 0.3s;
+}
 
-      /* Header with gear */
-      .header {
-        display: flex;
-        justify-content: flex-end;
-        align-items: center;
-        padding: 2px 5px;
-      }
-      .gear {
-        font-size: 22px;
-        cursor: pointer;
-        user-select: none;
-      }
+/* Header with gear */
+.header{
+  display:flex;
+  justify-content:flex-end;
+  align-items:center;
+  padding:2px 5px;
+}
+.gear{
+  font-size:22px;
+  cursor:pointer;
+  user-select:none;
+}
 
-      /* Centered pop-up settings menu */
-      .sidebar {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%) scale(0);
-        width: 240px; /* smaller width */
-        max-width: 90%;
-        background: #f5f5f5;
-        border-radius: 12px; /* slightly rounded */
-        padding: 15px;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); /* softer shadow */
-        transition: transform 0.3s ease, opacity 0.3s ease;
-        z-index: 1000;
-        opacity: 0;
-      }
-      .sidebar.open {
-        transform: translate(-50%, -50%) scale(1);
-        opacity: 1;
-      }
-      .sidebar h2 {
-        margin-top: 0;
-        font-size: 1rem;
-      }
-      .sidebar .closeBtn {
-        font-size: 24px; /* slightly smaller x */
-        font-weight: bold;
-        cursor: pointer;
-        float: right;
-      }
-      .sidebar label,
-      .sidebar select,
-      .sidebar input {
-        display: block;
-        margin: 10px 0;
-        width: 100%;
-        font-weight: bold;
-      }
+/* Compact centered settings popup */
+.sidebar{
+  position:fixed;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%) scale(0);
+  width:240px;
+  max-width:90%;
+  background:#f5f5f5;
+  border-radius:12px;
+  padding:15px;
+  box-shadow:0 5px 15px rgba(0,0,0,0.3);
+  transition:transform 0.3s ease,opacity 0.3s ease;
+  z-index:1000;
+  opacity:0;
+}
+.sidebar.open{
+  transform:translate(-50%,-50%) scale(1);
+  opacity:1;
+}
+.sidebar h2{
+  margin-top:0;
+  font-size:1rem;
+}
+.sidebar .closeBtn{
+  font-size:24px;
+  font-weight:bold;
+  cursor:pointer;
+  float:right;
+}
+.sidebar label,.sidebar select,.sidebar input{
+  display:block;
+  margin:10px 0;
+  width:100%;
+  font-weight:bold;
+  font-size:0.9rem;
+}
 
-      /* Widget Row Compact */
-      .widget-row {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        padding: 3px 5px;
-        flex-wrap: wrap;
-      }
-      #widget-title {
-        font-size: 0.85rem;
-        min-width: 50px;
-        white-space: nowrap;
-      }
-      .progress-container {
-        flex: 1;
-        height: 16px;
-        border-radius: 20px;
-        border: 1px solid;
-        position: relative;
-        background-color: var(--bar-bg, #e0e0e0);
-        overflow: hidden;
-      }
-      .progress-bar {
-        height: 100%;
-        width: 0%;
-        border-radius: 20px;
-        transition: width 0.5s, background 0.5s;
-      }
-      .percent-text {
-        min-width: 30px;
-        font-size: 0.8rem;
-        text-align: center;
-      }
-      .current-goal {
-        font-size: 0.8rem;
-        min-width: 60px;
-        text-align: right;
-      }
+/* Widget Row Compact */
+.widget-row{
+  display:flex;
+  align-items:center;
+  gap:4px;
+  padding:3px 5px;
+  flex-wrap:wrap;
+}
+#widget-title{
+  font-size:0.85rem;
+  min-width:50px;
+  white-space:nowrap;
+}
+.progress-container{
+  flex:1;
+  height:16px;
+  border-radius:20px;
+  border:1px solid;
+  position:relative;
+  background-color:var(--bar-bg,#e0e0e0);
+  overflow:hidden;
+}
+.progress-bar{
+  height:100%;
+  width:0%;
+  border-radius:20px;
+  transition:width 0.5s,background 0.5s;
+}
+.percent-text{
+  min-width:30px;
+  font-size:0.8rem;
+  text-align:center;
+}
+.current-goal{
+  font-size:0.8rem;
+  min-width:60px;
+  text-align:right;
+}
 
-      #updateSection {
-        display: none;
-      }
+@media(max-width:500px){
+  .widget-row{flex-direction:column;align-items:stretch;}
+  .percent-text,.current-goal{text-align:left;}
+}
+</style>
+</head>
+<body>
 
-      @media (max-width: 500px) {
-        .widget-row {
-          flex-direction: column;
-          align-items: stretch;
-        }
-        .percent-text,
-        .current-goal {
-          text-align: left;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <div class="header">
-      <span class="gear" onclick="toggleSidebar()">⚙</span>
-    </div>
+<div class="header">
+  <span class="gear" onclick="toggleSidebar()">⚙</span>
+</div>
 
-    <div class="sidebar" id="sidebar">
-      <span class="closeBtn" onclick="toggleSidebar()">×</span>
-      <h2>Settings</h2>
+<div class="sidebar" id="sidebar">
+  <span class="closeBtn" onclick="toggleSidebar()">×</span>
+  <h2>Settings</h2>
 
-      <label for="themeSelect">Theme:</label>
-      <select id="themeSelect" onchange="changeTheme()">
-        <option value="auto">Auto (Notion)</option>
-        <option value="light">Light</option>
-        <option value="dark">Dark</option>
-      </select>
+  <label for="themeSelect">Theme:</label>
+  <select id="themeSelect" onchange="changeTheme()">
+    <option value="auto">Auto (Notion)</option>
+    <option value="light">Light</option>
+    <option value="dark">Dark</option>
+  </select>
 
-      <label for="fontSelect">Font Style:</label>
-      <select id="fontSelect" onchange="changeFont()">
-        <option value="'Work Sans', sans-serif">Work Sans</option>
-        <option value="serif">Serif</option>
-        <option value="monospace">Mono</option>
-      </select>
+  <label for="fontSelect">Font Style:</label>
+  <select id="fontSelect" onchange="changeFont()">
+    <option value="'Work Sans', sans-serif">Work Sans</option>
+    <option value="serif">Serif</option>
+    <option value="monospace">Mono</option>
+  </select>
 
-      <label for="barType">Progress Type:</label>
-      <select id="barType" onchange="changeBarType()">
-        <option value="solid">Solid</option>
-        <option value="gradient">Gradient</option>
-      </select>
+  <label for="barType">Progress Type:</label>
+  <select id="barType" onchange="changeBarType()">
+    <option value="solid">Solid</option>
+    <option value="gradient">Gradient</option>
+  </select>
 
-      <label for="barColor1">Color 1:</label>
-      <input type="color" id="barColor1" onchange="changeBarColors()" />
-      <label for="barColor2" id="barColor2Label">Color 2 (gradient):</label>
-      <input type="color" id="barColor2" onchange="changeBarColors()" />
-    </div>
+  <label for="barColor1">Color 1:</label>
+  <input type="color" id="barColor1" onchange="changeBarColors()">
+  <label for="barColor2" id="barColor2Label">Color 2 (gradient):</label>
+  <input type="color" id="barColor2" onchange="changeBarColors()">
+</div>
 
-    <div class="widget-row">
-      <div id="widget-title"></div>
-      <div class="progress-container">
-        <div class="progress-bar" id="progress-bar"></div>
-      </div>
-      <div class="percent-text" id="percent-text">0%</div>
-      <div class="current-goal" id="current-goal">0/0</div>
-    </div>
+<div class="widget-row">
+  <div id="widget-title"></div>
+  <div class="progress-container">
+    <div class="progress-bar" id="progress-bar"></div>
+  </div>
+  <div class="percent-text" id="percent-text">0%</div>
+  <div class="current-goal" id="current-goal">0/0</div>
+</div>
 
-    <div id="updateSection">
-      <label>Update Current:</label>
-      <input
-        type="number"
-        id="currentInput"
-        placeholder="Enter current value"
-      />
-      <button onclick="updateCurrent()">Update</button>
-      <button onclick="resetCurrent()">Reset Current</button>
-    </div>
+<script>
+const API_URL="https://sheetdb.io/api/v1/r0g4ot5dg5gk0";
+let goal=0,current=0,title="";
+let rowId=1;
 
-    <script>
-      const API_URL = "https://sheetdb.io/api/v1/r0g4ot5dg5gk0";
-      let goal = 0,
-        current = 0,
-        title = "";
-      let rowId = 1;
+/* Sidebar toggle */
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');}
 
-      /* Sidebar toggle */
-      function toggleSidebar() {
-        document.getElementById("sidebar").classList.toggle("open");
-      }
+/* Load saved settings */
+function loadStyles(){
+  const font=localStorage.getItem('trackerFont')||"'Work Sans',sans-serif";
+  const barType=localStorage.getItem('trackerBarType')||'solid';
+  const barColor1=localStorage.getItem('trackerBarColor1')||'#00aa00';
+  const barColor2=localStorage.getItem('trackerBarColor2')||'#55ff55';
+  const theme=localStorage.getItem('trackerTheme')||'auto';
 
-      /* Show update section only outside Notion */
-      function inNotion() {
-        return window.location !== window.parent.location;
-      }
-      if (!inNotion()) {
-        document.getElementById("updateSection").style.display = "block";
-      }
+  document.body.style.fontFamily=font;
+  document.getElementById('fontSelect').value=font;
+  document.getElementById('barType').value=barType;
+  document.getElementById('barColor1').value=barColor1;
+  document.getElementById('barColor2').value=barColor2;
+  document.getElementById('themeSelect').value=theme;
 
-      /* Load saved settings */
-      function loadStyles() {
-        const font =
-          localStorage.getItem("trackerFont") || "'Work Sans',sans-serif";
-        const barType = localStorage.getItem("trackerBarType") || "solid";
-        const barColor1 = localStorage.getItem("trackerBarColor1") || "#00aa00";
-        const barColor2 = localStorage.getItem("trackerBarColor2") || "#55ff55";
-        const theme = localStorage.getItem("trackerTheme") || "auto";
+  toggleBar2Input();
+  updateProgressBar();
+}
 
-        document.body.style.fontFamily = font;
-        document.getElementById("fontSelect").value = font;
-        document.getElementById("barType").value = barType;
-        document.getElementById("barColor1").value = barColor1;
-        document.getElementById("barColor2").value = barColor2;
-        document.getElementById("themeSelect").value = theme;
+/* Font handling */
+function changeFont(){
+  const f=document.getElementById('fontSelect').value;
+  document.body.style.fontFamily=f;
+  localStorage.setItem('trackerFont',f);
+}
 
-        // FIX: ensure color2 input hides correctly on load
-        toggleBar2Input();
+/* Theme handling */
+function changeTheme(){
+  const theme=document.getElementById('themeSelect').value;
+  localStorage.setItem('trackerTheme',theme);
+  updateProgressBar();
+}
 
-        updateProgressBar();
-      }
+/* Bar color handling */
+function changeBarType(){localStorage.setItem('trackerBarType',document.getElementById('barType').value); toggleBar2Input(); updateProgressBar();}
+function changeBarColors(){localStorage.setItem('trackerBarColor1',document.getElementById('barColor1').value); localStorage.setItem('trackerBarColor2',document.getElementById('barColor2').value); updateProgressBar();}
+function toggleBar2Input(){
+  const type=document.getElementById('barType').value;
+  document.getElementById('barColor2').style.display=(type==='gradient')?'block':'none';
+  document.getElementById('barColor2Label').style.display=(type==='gradient')?'block':'none';
+}
 
-      /* Font handling */
-      function changeFont() {
-        const f = document.getElementById("fontSelect").value;
-        document.body.style.fontFamily = f;
-        localStorage.setItem("trackerFont", f);
-      }
+/* Load data from SheetDB */
+async function loadData(){
+  try{
+    const res=await fetch(API_URL);
+    const data=await res.json();
+    const row=data[0];
+    title=row.Title||"";
+    goal=parseFloat(row.Goal)||0;
+    current=parseFloat(row.Current)||0;
+    document.getElementById('widget-title').textContent=title;
+    updateProgressBar();
+  }catch(err){console.error(err);}
+}
 
-      /* Theme handling */
-      function changeTheme() {
-        const theme = document.getElementById("themeSelect").value;
-        localStorage.setItem("trackerTheme", theme);
-        updateProgressBar();
-      }
+/* Update progress bar and text */
+function updateProgressBar(){
+  const progressPercent=goal>0?Math.min((current/goal)*100,100):0;
+  const bar=document.getElementById('progress-bar');
+  const percentText=document.getElementById('percent-text');
+  const currentGoalText=document.getElementById('current-goal');
+  percentText.textContent=Math.floor(progressPercent)+'%';
+  currentGoalText.textContent=`${current}/${goal}`;
 
-      /* Bar color handling */
-      function changeBarType() {
-        localStorage.setItem(
-          "trackerBarType",
-          document.getElementById("barType").value
-        );
-        toggleBar2Input();
-        updateProgressBar();
-      }
-      function changeBarColors() {
-        localStorage.setItem(
-          "trackerBarColor1",
-          document.getElementById("barColor1").value
-        );
-        localStorage.setItem(
-          "trackerBarColor2",
-          document.getElementById("barColor2").value
-        );
-        updateProgressBar();
-      }
-      function toggleBar2Input() {
-        const type = document.getElementById("barType").value;
-        document.getElementById("barColor2").style.display =
-          type === "gradient" ? "block" : "none";
-        document.getElementById("barColor2Label").style.display =
-          type === "gradient" ? "block" : "none";
-      }
+  const savedTheme = localStorage.getItem('trackerTheme')||'auto';
+  let darkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if(savedTheme==='light') darkMode=false;
+  if(savedTheme==='dark') darkMode=true;
 
-      /* Load data from SheetDB */
-      async function loadData() {
-        try {
-          const res = await fetch(API_URL);
-          const data = await res.json();
-          const row = data[0];
-          title = row.Title || "";
-          goal = parseFloat(row.Goal) || 0;
-          current = parseFloat(row.Current) || 0;
-          document.getElementById("widget-title").textContent = title;
-          updateProgressBar();
-        } catch (err) {
-          console.error(err);
-        }
-      }
+  const textColor = darkMode ? '#FFFFFF' : '#000000';
+  const bgColor = darkMode ? '#2b2b2b' : '#f5f5f5';
+  const barBg = darkMode ? '#444' : '#ddd';
+  const barBorder = darkMode ? '#666' : '#bbb';
 
-      /* Update progress bar and text */
-      function updateProgressBar() {
-        const progressPercent =
-          goal > 0 ? Math.min((current / goal) * 100, 100) : 0;
-        const bar = document.getElementById("progress-bar");
-        const percentText = document.getElementById("percent-text");
-        const currentGoalText = document.getElementById("current-goal");
-        percentText.textContent = Math.floor(progressPercent) + "%";
-        currentGoalText.textContent = `${current}/${goal}`;
+  document.body.style.backgroundColor = bgColor;
+  percentText.style.color = textColor;
+  currentGoalText.style.color = textColor;
+  document.getElementById('widget-title').style.color = textColor;
 
-        // Dark/light mode
-        const savedTheme = localStorage.getItem("trackerTheme") || "auto";
-        let darkMode =
-          window.matchMedia &&
-          window.matchMedia("(prefers-color-scheme: dark)").matches;
-        if (savedTheme === "light") darkMode = false;
-        if (savedTheme === "dark") darkMode = true;
+  const type=localStorage.getItem('trackerBarType')||'solid';
+  const c1=localStorage.getItem('trackerBarColor1')||'#00aa00';
+  const c2=localStorage.getItem('trackerBarColor2')||'#55ff55';
 
-        const textColor = darkMode ? "#FFFFFF" : "#000000";
-        const bgColor = darkMode ? "#2b2b2b" : "#f5f5f5";
-        const barBg = darkMode ? "#444" : "#ddd";
-        const barBorder = darkMode ? "#666" : "#bbb";
+  bar.parentElement.style.backgroundColor = barBg;
+  bar.parentElement.style.borderColor = barBorder;
 
-        document.body.style.backgroundColor = bgColor;
-        percentText.style.color = textColor;
-        currentGoalText.style.color = textColor;
-        document.getElementById("widget-title").style.color = textColor;
+  bar.style.background = (type==='solid')?c1:`linear-gradient(to right, ${c1}, ${c2})`;
+  bar.style.width = progressPercent+'%';
+}
 
-        const type = localStorage.getItem("trackerBarType") || "solid";
-        const c1 = localStorage.getItem("trackerBarColor1") || "#00aa00";
-        const c2 = localStorage.getItem("trackerBarColor2") || "#55ff55";
+/* Initial load */
+loadStyles();
+loadData();
+setInterval(loadData,300000); // Refresh every 5 minutes
+</script>
 
-        bar.parentElement.style.backgroundColor = barBg;
-        bar.parentElement.style.borderColor = barBorder;
-
-        bar.style.background =
-          type === "solid" ? c1 : `linear-gradient(to right, ${c1}, ${c2})`;
-        bar.style.width = progressPercent + "%";
-      }
-
-      /* Update current value */
-      async function updateCurrent() {
-        const newCurrent = parseFloat(
-          document.getElementById("currentInput").value
-        );
-        if (!isNaN(newCurrent) && newCurrent >= 0) {
-          current = newCurrent;
-          document.getElementById("currentInput").value = "";
-          updateProgressBar();
-          try {
-            await fetch(`${API_URL}/row/${rowId}`, {
-              method: "PATCH",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ data: { Current: current } }),
-            });
-          } catch (err) {
-            console.error(err);
-          }
-        } else {
-          alert("Please enter a valid number.");
-        }
-      }
-
-      /* Reset current */
-      async function resetCurrent() {
-        current = 0;
-        updateProgressBar();
-        try {
-          await fetch(`${API_URL}/row/${rowId}`, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ data: { Current: current } }),
-          });
-        } catch (err) {
-          console.error(err);
-        }
-      }
-
-      loadStyles();
-      loadData();
-      setInterval(loadData, 300000);
-    </script>
-  </body>
+</body>
 </html>
