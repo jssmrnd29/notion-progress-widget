@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Progress Bar Widget</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        margin-top: 50px;
+      }
+      .progress-container {
+        width: 80%;
+        background-color: #eee;
+        border-radius: 25px;
+        margin: 20px auto;
+        height: 30px;
+      }
+      .progress-bar {
+        width: 0%;
+        height: 30px;
+        border-radius: 25px;
+        line-height: 30px;
+        color: white;
+        font-weight: bold;
+        text-align: center;
+        transition: width 0.5s, background-color 0.5s;
+      }
+      input {
+        padding: 5px;
+        width: 120px;
+        margin: 5px;
+      }
+      button {
+        padding: 5px 10px;
+        margin: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <h2 id="widget-title">Travel Incentive Progress</h2>
+
+    <label>Widget Title:</label>
+    <input type="text" id="titleInput" placeholder="Enter title" />
+    <button onclick="updateTitle()">Set Title</button>
+
+    <br /><br />
+
+    <label>Set Goal:</label>
+    <input type="number" id="goalInput" placeholder="Enter goal" />
+    <button onclick="setGoal()">Set Goal</button>
+
+    <br /><br />
+
+    <label>Update Current:</label>
+    <input type="number" id="currentInput" placeholder="Enter current value" />
+    <button onclick="updateProgress()">Update</button>
+    <button onclick="resetProgress()">Reset</button>
+
+    <div class="progress-container">
+      <div class="progress-bar" id="progress-bar">0%</div>
+    </div>
+
+    <p id="progress-text">Goal: - | Current: 0</p>
+
+    <script>
+      let goal = null;
+      let current = 0;
+
+      // Update widget title
+      function updateTitle() {
+        const title = document.getElementById("titleInput").value.trim();
+        if (title) {
+          document.getElementById("widget-title").textContent = title;
+          document.getElementById("titleInput").value = "";
+        }
+      }
+
+      // Set goal
+      function setGoal() {
+        const goalVal = parseFloat(document.getElementById("goalInput").value);
+        if (!isNaN(goalVal) && goalVal > 0) {
+          goal = goalVal;
+          document.getElementById("goalInput").disabled = true;
+          document.getElementById("goalInput").value = "";
+          updateProgress();
+        } else {
+          alert("Please enter a valid goal.");
+        }
+      }
+
+      // Update progress
+      function updateProgress() {
+        if (!goal) {
+          alert("Please set a goal first.");
+          return;
+        }
+
+        const currentVal = parseFloat(
+          document.getElementById("currentInput").value
+        );
+        if (!isNaN(currentVal) && currentVal >= 0) {
+          current = currentVal;
+          document.getElementById("currentInput").value = "";
+
+          const progressPercent = Math.min((current / goal) * 100, 100);
+          const progressBar = document.getElementById("progress-bar");
+          progressBar.style.width = progressPercent + "%";
+
+          // Solid color: red to green based on progress
+          const red = Math.max(255 - Math.floor(2.55 * progressPercent), 0);
+          const green = Math.min(Math.floor(2.55 * progressPercent), 255);
+          progressBar.style.backgroundColor = `rgb(${red},${green},0)`;
+
+          progressBar.textContent = Math.floor(progressPercent) + "%";
+          document.getElementById(
+            "progress-text"
+          ).textContent = `Goal: ${goal} | Current: ${current}`;
+        } else {
+          alert("Please enter a valid current value.");
+        }
+      }
+
+      // Reset everything
+      function resetProgress() {
+        goal = null;
+        current = 0;
+        document.getElementById("goalInput").disabled = false;
+        document.getElementById("goalInput").value = "";
+        document.getElementById("currentInput").value = "";
+        document.getElementById("widget-title").textContent =
+          "Travel Incentive Progress";
+        document.getElementById("progress-bar").style.width = "0%";
+        document.getElementById("progress-bar").style.backgroundColor = "red";
+        document.getElementById("progress-bar").textContent = "0%";
+        document.getElementById("progress-text").textContent =
+          "Goal: - | Current: 0";
+      }
+    </script>
+  </body>
+</html>
