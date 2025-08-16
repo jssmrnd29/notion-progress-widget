@@ -33,7 +33,7 @@ body {
   top:50%;
   left:50%;
   transform:translate(-50%,-50%) scale(0);
-  width:240px;
+  width:260px;
   max-width:90%;
   background:#f5f5f5;
   border-radius:12px;
@@ -59,7 +59,7 @@ body {
 }
 .sidebar label,.sidebar select,.sidebar input{
   display:block;
-  margin:10px 0;
+  margin:8px 0;
   width:100%;
   font-weight:bold;
   font-size:0.9rem;
@@ -69,19 +69,21 @@ body {
 .widget-row{
   display:flex;
   align-items:center;
-  gap:4px;
-  padding:3px 5px;
+  gap:8px;              /* spacing for readability */
+  padding:4px 6px;      
   flex-wrap:wrap;
 }
 #widget-title{
-  font-size:0.85rem;
+  font-size:0.95rem;    /* bigger, readable */
+  font-weight:bold;
   min-width:50px;
   white-space:nowrap;
+  letter-spacing:0.5px; /* spacing like Notion */
 }
 .progress-container{
   flex:1;
-  height:16px;
-  border-radius:20px;
+  height:20px;          /* thicker bar */
+  border-radius:10px;   /* smooth round corners */
   border:1px solid;
   position:relative;
   background-color:var(--bar-bg,#e0e0e0);
@@ -90,23 +92,28 @@ body {
 .progress-bar{
   height:100%;
   width:0%;
-  border-radius:20px;
+  border-radius:10px;
   transition:width 0.5s,background 0.5s;
 }
 .percent-text{
-  min-width:30px;
-  font-size:0.8rem;
+  min-width:35px;
+  font-size:0.9rem;     
+  font-weight:bold;
   text-align:center;
+  letter-spacing:0.5px;
 }
 .current-goal{
-  font-size:0.8rem;
-  min-width:60px;
+  font-size:0.9rem;     
+  font-weight:bold;
+  min-width:65px;
   text-align:right;
+  letter-spacing:0.5px;
 }
 
 @media(max-width:500px){
   .widget-row{flex-direction:column;align-items:stretch;}
   .percent-text,.current-goal{text-align:left;}
+  .sidebar{width:90%;padding:12px;}
 }
 </style>
 </head>
