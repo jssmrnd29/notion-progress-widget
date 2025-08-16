@@ -3,35 +3,109 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Progress Bar Widget</title>
+<title>Progress Tracker Widget</title>
 <style>
-  body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
-  .progress-container { width: 80%; background-color: #eee; border-radius: 25px; margin: 20px auto; height: 30px; }
-  .progress-bar { width: 0%; height: 30px; border-radius: 25px; line-height: 30px; color: white; font-weight: bold; text-align: center; transition: width 0.5s, background-color 0.5s; }
-  input { padding: 5px; width: 120px; margin: 5px; }
-  button { padding: 5px 10px; margin: 5px; }
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+    background-color: var(--bg-color, transparent);
+    color: var(--text-color, #000);
+    transition: background-color 0.3s, color 0.3s;
+  }
+
+  /* Header with burger */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background: transparent;
+  }
+  .burger {
+    font-size: 24px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  /* Sidebar menu */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    right: -220px;
+    width: 200px;
+    height: 100%;
+    background: #f5f5f5;
+    box-shadow: -2px 0 5px rgba(0,0,0,0.2);
+    transition: right 0.3s;
+    padding: 20px;
+    z-index: 1000;
+  }
+  .sidebar.open {
+    right: 0;
+  }
+  .sidebar label, .sidebar select, .sidebar input {
+    display: block;
+    margin: 10px 0;
+    width: 100%;
+  }
+
+  h2#widget-title {
+    margin-top: 20px;
+    font-size: 1.5rem;
+  }
+
+  .progress-container {
+    width: 80%;
+    background-color: #eee;
+    border-radius: 25px;
+    margin: 20px auto;
+    height: 30px;
+  }
+  .progress-bar {
+    width: 0%;
+    height: 30px;
+    border-radius: 25px;
+    line-height: 30px;
+    color: white;
+    font-weight: bold;
+    text-align: center;
+    transition: width 0.5s, background-color 0.5s;
+  }
+
+  #progress-text {
+    margin: 10px 0;
+  }
+
+  #updateSection { display: none; } /* Notion-safe, hidden in Notion */
 </style>
 </head>
 <body>
 
+<div class="header">
+  <span>Progress Tracker</span>
+  <span class="burger" onclick="toggleSidebar()">☰</span>
+</div>
+
+<!-- Sidebar menu -->
+<div class="sidebar" id="sidebar">
+  <h3>Settings</h3>
+  <label for="fontSelect">Font:</label>
+  <select id="fontSelect" onchange="changeFont()">
+    <option value="Arial">Arial</option>
+    <option value="Times New Roman">Times New Roman</option>
+    <option value="Courier New">Courier New</option>
+  </select>
+
+  <label for="textColor">Text color:</label>
+  <input type="color" id="textColor" onchange="changeTextColor()">
+
+  <label for="bgColor">Background:</label>
+  <input type="color" id="bgColor" onchange="changeBgColor()">
+</div>
+
 <h2 id="widget-title"></h2>
-
-<label>Set Title:</label>
-<input type="text" id="titleInput" placeholder="Enter title" />
-<button onclick="setTitle()">Set Title</button>
-
-<br><br>
-
-<label>Set Goal:</label>
-<input type="number" id="goalInput" placeholder="Enter goal" />
-<button onclick="setGoal()">Set Goal</button>
-
-<br><br>
-
-<label>Update Current:</label>
-<input type="number" id="currentInput" placeholder="Enter current value" />
-<button onclick="updateCurrent()">Update</button>
-<button onclick="resetCurrent()">Reset Current</button>
 
 <div class="progress-container">
   <div class="progress-bar" id="progress-bar">0%</div>
@@ -39,14 +113,65 @@
 
 <p id="progress-text">Goal: 0 | Current: 0</p>
 
+<!-- Update section visible in browser only -->
+<div id="updateSection">
+  <label>Update Current:</label>
+  <input type="number" id="currentInput" placeholder="Enter current value" />
+  <button onclick="updateCurrent()">Update</button>
+  <button onclick="resetCurrent()">Reset Current</button>
+</div>
+
 <script>
 const API_URL = "https://sheetdb.io/api/v1/r0g4ot5dg5gk0";
 let goal = 0;
 let current = 0;
 let title = "";
-let rowId = 1; // First row in your sheet
+let rowId = 1; // first row in sheet
 
-// Load data from SheetDB
+/* Sidebar toggle */
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+}
+
+/* Style customization using localStorage */
+function loadStyles() {
+  const font = localStorage.getItem('trackerFont') || 'Arial';
+  const textColor = localStorage.getItem('trackerTextColor') || '#000000';
+  const bgColor = localStorage.getItem('trackerBgColor') || 'transparent';
+  document.body.style.fontFamily = font;
+  document.body.style.setProperty('--text-color', textColor);
+  document.body.style.setProperty('--bg-color', bgColor);
+  document.getElementById('fontSelect').value = font;
+  document.getElementById('textColor').value = textColor;
+  document.getElementById('bgColor').value = bgColor;
+}
+function changeFont() {
+  const font = document.getElementById('fontSelect').value;
+  document.body.style.fontFamily = font;
+  localStorage.setItem('trackerFont', font);
+}
+function changeTextColor() {
+  const color = document.getElementById('textColor').value;
+  document.body.style.setProperty('--text-color', color);
+  localStorage.setItem('trackerTextColor', color);
+}
+function changeBgColor() {
+  const color = document.getElementById('bgColor').value;
+  document.body.style.setProperty('--bg-color', color);
+  localStorage.setItem('trackerBgColor', color);
+}
+
+/* Detect if in Notion iframe */
+function inNotion() {
+  return window.location !== window.parent.location;
+}
+
+/* Show update section only in browser */
+if(!inNotion()) {
+  document.getElementById('updateSection').style.display = "block";
+}
+
+/* Load data from SheetDB */
 async function loadData() {
   try {
     const res = await fetch(API_URL);
@@ -55,55 +180,27 @@ async function loadData() {
     title = row.Title || "";
     goal = parseFloat(row.Goal) || 0;
     current = parseFloat(row.Current) || 0;
-
     document.getElementById('widget-title').textContent = title;
-    if(goal > 0) document.getElementById('goalInput').disabled = true;
     updateProgressBar();
-  } catch (err) {
-    console.error(err);
-  }
+  } catch(err) { console.error(err); }
 }
 
-// Set title
-async function setTitle() {
-  const newTitle = document.getElementById('titleInput').value.trim();
-  if(newTitle) {
-    title = newTitle;
-    document.getElementById('widget-title').textContent = title;
-    document.getElementById('titleInput').value = '';
-    try {
-      await fetch(`${API_URL}/row/${rowId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ data: { Title: title } })
-      });
-    } catch(err) { console.error(err); }
-  } else {
-    alert("Please enter a title.");
-  }
+/* Update progress bar */
+function updateProgressBar() {
+  const progressPercent = goal > 0 ? Math.min((current / goal) * 100, 100) : 0;
+  const progressBar = document.getElementById("progress-bar");
+  progressBar.style.width = progressPercent + "%";
+
+  // Rich green (not too light)
+  const red = Math.max(255 - Math.floor(2.55 * progressPercent), 0);
+  const green = Math.min(180 + Math.floor(0.75 * progressPercent), 180); // darker green
+  progressBar.style.backgroundColor = `rgb(${red},${green},0)`;
+
+  progressBar.textContent = Math.floor(progressPercent) + "%";
+  document.getElementById('progress-text').textContent = `Goal: ${goal} | Current: ${current}`;
 }
 
-// Set goal
-async function setGoal() {
-  const newGoal = parseFloat(document.getElementById('goalInput').value);
-  if(!isNaN(newGoal) && newGoal > 0) {
-    goal = newGoal;
-    document.getElementById('goalInput').disabled = true;
-    document.getElementById('goalInput').value = '';
-    updateProgressBar();
-    try {
-      await fetch(`${API_URL}/row/${rowId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ data: { Goal: goal } })
-      });
-    } catch(err) { console.error(err); }
-  } else {
-    alert("Please enter a valid goal.");
-  }
-}
-
-// Update current value
+/* Update Current in browser */
 async function updateCurrent() {
   const newCurrent = parseFloat(document.getElementById('currentInput').value);
   if(!isNaN(newCurrent) && newCurrent >= 0) {
@@ -122,7 +219,7 @@ async function updateCurrent() {
   }
 }
 
-// Reset current only
+/* Reset Current in browser */
 async function resetCurrent() {
   current = 0;
   updateProgressBar();
@@ -135,23 +232,10 @@ async function resetCurrent() {
   } catch(err) { console.error(err); }
 }
 
-// Update progress bar UI
-function updateProgressBar() {
-  const progressPercent = goal > 0 ? Math.min((current / goal) * 100, 100) : 0;
-  const progressBar = document.getElementById("progress-bar");
-  progressBar.style.width = progressPercent + "%";
-
-  const red = Math.max(255 - Math.floor(2.55 * progressPercent), 0);
-  const green = Math.min(Math.floor(2.55 * progressPercent), 255);
-  progressBar.style.backgroundColor = `rgb(${red},${green},0)`;
-
-  progressBar.textContent = Math.floor(progressPercent) + "%";
-  document.getElementById('progress-text').textContent = `Goal: ${goal} | Current: ${current}`;
-}
-
-// Initialize
+/* Initialize */
+loadStyles();
 loadData();
+setInterval(loadData, 300000); // refresh every 5 minutes for Notion
 </script>
-
 </body>
 </html>
